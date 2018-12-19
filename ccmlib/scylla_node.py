@@ -19,6 +19,7 @@ from six import print_
 from ccmlib import common
 from ccmlib.node import Node
 from ccmlib.node import NodeError
+from ccmlib.prometheus import Prometheus
 
 
 def wait_for(func, timeout, first=0.0, step=1.0, text=None):
@@ -72,6 +73,8 @@ class ScyllaNode(Node):
         self._process_jmx_waiter = None
         self._process_scylla = None
         self._process_scylla_waiter = None
+        ip = self.network_interfaces['binary'][0]
+        self._prometheus = Prometheus(ip)
 
     def get_install_cassandra_root(self):
         return os.path.join(self.get_install_dir(), 'resources', 'cassandra')
@@ -796,3 +799,11 @@ class ScyllaNode(Node):
     def flush(self):
         self.nodetool("flush")
         self._wait_no_pending_flushes()
+
+    @property
+    def prometheus(self):
+        return self._prometheus
+
+    @property
+    def metrics(self):
+        return self._prometheus.metrics
